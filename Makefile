@@ -4,7 +4,7 @@ LINKER_SCRIPT   = link.ld
 
 AS              = nasm
 KERNEL_AS_FLAGS = -f elf32
-CC              = clang
+CC              = gcc
 KERNEL_CC_FLAGS = -m32
 LD              = ld
 KERNEL_LD_FLAGS = -m elf_i386 -T ${LINKER_SCRIPT}
