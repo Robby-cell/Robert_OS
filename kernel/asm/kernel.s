@@ -14,6 +14,7 @@ global Krnl_load_idt
 
 extern kmain 		;this is defined in the c file
 extern Krnl_keyboard_handler_main
+extern Krnl_put_pixel
 
 Krnl_read_port:
 	mov edx, [esp + 4]

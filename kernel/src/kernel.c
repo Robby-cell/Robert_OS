@@ -1,4 +1,5 @@
 #include "keyboard_map.inl.h"
+#include "draw.h"
 
 #define LINES 25
 #define COLUMNS_IN_LINE 80
@@ -120,14 +121,17 @@ void Krnl_keyboard_handler_main(void) {
 void kmain(void)
 {
 	const char *str = "my first kernel with keyboard support";
+  Krnl_clear_screen();
 
-	Krnl_clear_screen();
 	kprint(str);
 	kprint_newline();
 	kprint_newline();
 
 	Krnl_idt_init();
 	Krnl_kb_init();
+
+  for (int i = 0; i < 25; ++i)
+    Krnl_put_pixel(i, i, RED);
 
 	while(1);
 }
