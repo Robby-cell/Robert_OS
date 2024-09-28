@@ -32,9 +32,6 @@
 #define BRIGHT_YELLOW   0x15
 #define BRIGHT_WHITE    0x16
 
-extern int Krnl_ScreenWidth;
-extern int Krnl_ScreenHeight;
-
 extern void Krnl_put_pixel(int x, int y, uint8_t color);
 
 void Krnl_set_video_mode_13h(void);

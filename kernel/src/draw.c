@@ -1,4 +1,5 @@
 #include "draw.h"
+#include "kernel_glbl.h"
 
 int Krnl_ScreenWidth = 320;
 int Krnl_ScreenHeight = 200;

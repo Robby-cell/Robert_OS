@@ -1,29 +1,21 @@
-#include "keyboard_map.inl.h"
+#include "game.h"
 #include "draw.h"
 #include "random.h"
 #include "print.h"
+#include "kernel_glbl.h"
+#include "keyboard.h"
 
-#define LINES 25
-#define COLUMNS_IN_LINE 80
-#define BYTES_FOR_EACH_ELEMENT 2
-#define SCREENSIZE (BYTES_FOR_EACH_ELEMENT * COLUMNS_IN_LINE * LINES)
-
-#define KEYBOARD_DATA_PORT 0x60
-#define KEYBOARD_STATUS_PORT 0x64
-#define IDT_SIZE 256
-#define INTERRUPT_GATE 0x8e
-#define KERNEL_CODE_SEGMENT_OFFSET 0x08
-
-#define ENTER_KEY_CODE 0x1C
-
-extern unsigned char KeyboardMap[128];
 extern void Krnl_keyboard_handler(void);
 extern char Krnl_read_port(unsigned short port);
 extern void Krnl_write_port(unsigned short port, unsigned char data);
 extern void Krnl_load_idt(unsigned long *idt_ptr);
 
-static unsigned CurrentLocation = 0;
-static char* VidPtr = (char*)0xb8000;
+/**
+ * Extern vars, must be init
+ */
+unsigned CurrentLocation = 0;
+char* VidPtr = (char*)0xb8000;
+struct ButtonState Krnl_keyboard_state[BUTTONSTATE_SIZE];
 
 struct Krnl_IdtEntry {
   unsigned short offset_lowerbits;
@@ -69,18 +61,19 @@ static void Krnl_idt_init(void) {
 	idt_ptr[1] = idt_addr >> 16 ;
 
 	Krnl_load_idt(idt_ptr);
+
+  for (int i = 0; i < (sizeof(Krnl_keyboard_state) / sizeof(Krnl_keyboard_state[0])); ++i) {
+    Krnl_keyboard_state[i] = (struct ButtonState) {
+      .key_state = KS_KEY_RELEASED,
+      .keyup = (struct Keyup) {
+        .key = i,
+      },
+    };
+  }
 }
 
 static void Krnl_kb_init(void) {
   Krnl_write_port(0x21, 0xFD);
-}
-
-void kprint(const char* str) {
-  unsigned int i = 0;
-  while (str[i] != '\0') {
-    VidPtr[CurrentLocation++] = str[i++];
-    VidPtr[CurrentLocation++] = 0x07;
-  }
 }
 
 void kprint_newline(void) {
@@ -88,52 +81,24 @@ void kprint_newline(void) {
   CurrentLocation = CurrentLocation + (line_size - CurrentLocation % (line_size));
 }
 
-void Krnl_clear_screen(void) {
-  unsigned i = 0;
-  while (i < SCREENSIZE) {
-    VidPtr[i++] = ' ';
-    VidPtr[i++] = 0x07;
-  }
-}
-
-void Krnl_keyboard_handler_main(void) {
-  unsigned char status;
-  char keycode;
-
-  Krnl_write_port(0x20, 0x20);
-
-  status = Krnl_read_port(KEYBOARD_STATUS_PORT);
-
-  if (status & 0x01) {
-    keycode = Krnl_read_port(KEYBOARD_DATA_PORT);
-    if (keycode < 0) {
-      return;
-    }
-
-    if (keycode == ENTER_KEY_CODE) {
-      kprint_newline();
-      return;
-    }
-
-    VidPtr[CurrentLocation++] = KeyboardMap[(unsigned char)keycode];
-    VidPtr[CurrentLocation++] = 0x07;
-  }
-}
-
 void kmain(void) {
-	const char *str = "my first kernel with keyboard support";
-  Krnl_clear_screen();
+	// const char *str = "my first kernel with keyboard support";
+  // Krnl_clear_screen();
 
-  char buffer[20];
-  Krnl_print_hex(buffer, 42343);
+  // char buffer[20];
+  // Krnl_print_hex(buffer, 42343);
 
-	kprint(str);
-  kprint(buffer);
-	kprint_newline();
-	kprint_newline();
+	// kprint(str);
+  // kprint(buffer);
+	// kprint_newline();
+	// kprint_newline();
+
+  // Krnl_print_at(30, 30, 'h');
 
 	Krnl_idt_init();
 	Krnl_kb_init();
+
+  Krnl_begin_game();
 
 	while(1);
 }
