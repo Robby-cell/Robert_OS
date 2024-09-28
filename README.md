@@ -2,7 +2,7 @@
 
 ## Tooling
 
-Debian based distro is assumed.
+Using apt:
 
 ```bash
 # Building
